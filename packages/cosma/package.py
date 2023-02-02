@@ -37,6 +37,9 @@ class Cosma(CMakePackage):
     variant("rocm", default=False, description="Build with rocBLAS support")
     variant("scalapack", default=False, description="Build with ScaLAPACK API")
     variant("shared", default=False, description="Build the shared library version")
+    variant("tests", default=False, description="Build tests")
+    variant("apps", default=False, description="Build miniapp")
+    variant("profiling", default=False, description="Enable profiling")
 
     depends_on("cmake@3.12:", type="build")
     depends_on("mpi@3:")
@@ -45,8 +48,12 @@ class Cosma(CMakePackage):
     depends_on("cuda", when="+cuda")
     depends_on("rocblas", when="+rocm")
 
-    depends_on("tiled-mm", when="@master")
-    depends_on("costa", when="@master")
+    with when("@master"):
+        depends_on("tiled-mm")
+        depends_on("costa")
+        depends_on("cxxopts", when="+apps")
+        depends_on("cxxopts", when="+tests")
+
 
     def url_for_version(self, version):
         if version <= Version("2.3.0"):
@@ -98,9 +105,9 @@ class Cosma(CMakePackage):
 
     def cmake_args(self):
         return [
-            self.define("COSMA_WITH_TESTS", False),
-            self.define("COSMA_WITH_APPS", False),
-            self.define("COSMA_WITH_PROFILING", False),
+            self.define_from_variant("COSMA_WITH_TESTS", "tests"),
+            self.define_from_variant("COSMA_WITH_APPS", "apps"),
+            self.define("COSMA_WITH_PROFILING", "profiling"),
             self.define("COSMA_WITH_BENCHMARKS", False),
             self.define("COSMA_BLAS", self.cosma_blas_cmake_arg()),
             self.define("COSMA_SCALAPACK", self.cosma_scalapack_cmake_arg()),
