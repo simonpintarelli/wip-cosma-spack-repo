@@ -19,7 +19,7 @@ class Cosma(CMakePackage):
 
     # note: The default archives produced with github do not have the archives
     #       of the submodules.
-    version("master", branch="master", submodules=True)
+    version("master", branch="master", submodules=False)
     version("2.6.2", sha256="2debb5123cc35aeebc5fd2f8a46cfd6356d1e27618c9bb57129ecd09aa400940",
             url="https://github.com/eth-cscs/COSMA/releases/download/v2.6.2/cosma.tar.gz")
     version("2.6.1", sha256="69aa6634a030674f0d9be61e7b0bf0dc17acf0fc9e7a90b40e3179e2254c8d67")
@@ -44,6 +44,9 @@ class Cosma(CMakePackage):
     depends_on("scalapack", when="+scalapack")
     depends_on("cuda", when="+cuda")
     depends_on("rocblas", when="+rocm")
+
+    depends_on("tiled-mm", when="@master")
+    depends_on("costa", when="@master")
 
     def url_for_version(self, version):
         if version <= Version("2.3.0"):
