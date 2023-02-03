@@ -18,15 +18,20 @@ class TiledMm(CMakePackage, CudaPackage, ROCmPackage):
 
     variant("shared", default=True)
     variant("examples", default=False)
+    variant("tests", default=False)
 
-    depends_on('rocblas', when='+rocm')
+    depends_on("rocblas", when="+rocm")
+    depends_on("cxxopts", when="+tests")
+    depends_on("cxxopts", when="+examples")
 
-    conflicts('~cuda~rocm')
+
+    conflicts("~cuda~rocm")
 
     def cmake_args(self):
         args = [
             self.define_from_variant("BUILD_SHARED_LIBS", "shared"),
             self.define_from_variant("TIELDMM_WITH_EXAMPLES", "examples"),
+            self.define_from_variant("TIELDMM_WITH_TESTS", "tests"),
         ]
 
         if "+rocm" in self.spec:
