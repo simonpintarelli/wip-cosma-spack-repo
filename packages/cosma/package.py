@@ -40,6 +40,10 @@ class Cosma(CMakePackage):
     variant("tests", default=False, description="Build tests")
     variant("apps", default=False, description="Build miniapp")
     variant("profiling", default=False, description="Enable profiling")
+    variant("gpu_direct", default=False, description="GPU aware MPI")
+
+    with when("+cuda"):
+        variant("nccl", default=False, description="Use cuda nccl")
 
     depends_on("cmake@3.12:", type="build")
     depends_on("mpi@3:")
@@ -49,11 +53,11 @@ class Cosma(CMakePackage):
     depends_on("rocblas", when="+rocm")
 
     with when("@master"):
-        depends_on("tiled-mm")
+        depends_on("tiled-mm+rocm", when="+rocm")
+        depends_on("tiled-mm+cuda", when="+cuda")
         depends_on("costa")
         depends_on("cxxopts", when="+apps")
         depends_on("cxxopts", when="+tests")
-
 
     def url_for_version(self, version):
         if version <= Version("2.3.0"):
@@ -107,6 +111,8 @@ class Cosma(CMakePackage):
         return [
             self.define_from_variant("COSMA_WITH_TESTS", "tests"),
             self.define_from_variant("COSMA_WITH_APPS", "apps"),
+            self.define_from_variant("COSMA_WITH_NCCL", "nccl"),
+            self.define_from_variant("COSMA_WITH_GPU_AWARE_MPI", "gpu_direct"),
             self.define("COSMA_WITH_PROFILING", "profiling"),
             self.define("COSMA_WITH_BENCHMARKS", False),
             self.define("COSMA_BLAS", self.cosma_blas_cmake_arg()),
