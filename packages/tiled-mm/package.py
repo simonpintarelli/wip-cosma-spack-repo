@@ -35,9 +35,9 @@ class TiledMm(CMakePackage, CudaPackage, ROCmPackage):
         ]
 
         if "+rocm" in self.spec:
-            args.extend([self.define("TILED_MM_GPU_BACKEND", "ROCM")])
+            args.extend([self.define("TILEDMM_GPU_BACKEND", "ROCM")])
 
         if "+cuda" in self.spec:
-            args.extend([self.define("TILED_MM_GPU_BACKEND", "CUDA")])
+            args.extend([self.define("TILEDMM_GPU_BACKEND", "CUDA")])
 
         return args
