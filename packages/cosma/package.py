@@ -58,6 +58,7 @@ class Cosma(CMakePackage):
         depends_on("costa")
         depends_on("cxxopts", when="+apps")
         depends_on("cxxopts", when="+tests")
+        depends_on("semiprof", when="+profiling")
 
     def url_for_version(self, version):
         if version <= Version("2.3.0"):
