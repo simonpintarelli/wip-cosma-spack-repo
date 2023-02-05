@@ -45,7 +45,7 @@ class Cosma(CMakePackage):
     with when("+cuda"):
         variant("nccl", default=False, description="Use cuda nccl")
 
-    depends_on("cmake@3.12:", type="build")
+    depends_on("cmake@3.22:", type="build")
     depends_on("mpi@3:")
     depends_on("blas", when="~cuda ~rocm")
     depends_on("scalapack", when="+scalapack")
@@ -56,9 +56,11 @@ class Cosma(CMakePackage):
         depends_on("tiled-mm+rocm", when="+rocm")
         depends_on("tiled-mm+cuda", when="+cuda")
         depends_on("costa")
+        depends_on("costa+scalapack", when="+scalapack")
         depends_on("cxxopts", when="+apps")
         depends_on("cxxopts", when="+tests")
         depends_on("semiprof", when="+profiling")
+        depends_on("costa+profiling", when="+profiling")
 
     def url_for_version(self, version):
         if version <= Version("2.3.0"):

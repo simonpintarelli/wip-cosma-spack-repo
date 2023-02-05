@@ -25,6 +25,10 @@ class Costa(CMakePackage):
 
     variant("scalapack", default=False, description="Build with ScaLAPACK API")
     variant("shared", default=False, description="Build shared libraries")
+    variant("profiling", default=False, description="Enable profiling")
+    variant("tests", default=False, description="Enable tests")
+    variant("apps", default=False, description="Enable miniapp")
+    variant("benchmarks", default=False, description="Enable benchmarks")
 
     depends_on("cmake@3.12:", type="build")
     depends_on("mpi@3:")
@@ -54,10 +58,10 @@ class Costa(CMakePackage):
 
     def cmake_args(self):
         return [
-            self.define("COSTA_WITH_BENCHMARKS", "OFF"),
-            self.define("COSTA_WITH_APPS", "OFF"),
-            self.define("COSTA_WITH_TESTS", "OFF"),
-            self.define("COSTA_WITH_PROFILING", "OFF"),
-            self.define("COSTA_SCALAPACK", self.costa_scalapack_cmake_arg()),
-            self.define("BUILD_SHARED_LIBS", "+shared" in self.spec),
+            self.define_from_variant("COSTA_WITH_BENCHMARKS", "benchmarks"),
+            self.define_from_variant("COSTA_WITH_APPS", "apps"),
+            self.define_from_variant("COSTA_WITH_TESTS", "tests"),
+            self.define_from_variant("COSTA_WITH_PROFILING", "profiling"),
+            self.define_from_variant("BUILD_SHARED_LIBS", "shared"),
+            self.define("COSTA_SCALAPACK_IMPLEMENTATION", self.costa_scalapack_cmake_arg()),
         ]
