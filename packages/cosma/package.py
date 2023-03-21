@@ -20,6 +20,9 @@ class Cosma(CMakePackage):
     # note: The default archives produced with github do not have the archives
     #       of the submodules.
     version("master", branch="master", submodules=False)
+    version("2.6.4",
+            sha256="6d7bd5e3005874af9542a329c93e7ccd29ca1a5573dae27618fac2704fa2b6ab",
+            url="https://github.com/eth-cscs/COSMA/releases/download/v2.6.4/cosma.tar.gz")
     version("2.6.2", sha256="2debb5123cc35aeebc5fd2f8a46cfd6356d1e27618c9bb57129ecd09aa400940",
             url="https://github.com/eth-cscs/COSMA/releases/download/v2.6.2/cosma.tar.gz")
     version("2.6.1", sha256="69aa6634a030674f0d9be61e7b0bf0dc17acf0fc9e7a90b40e3179e2254c8d67")
@@ -44,6 +47,8 @@ class Cosma(CMakePackage):
 
     with when("+cuda"):
         variant("nccl", default=False, description="Use cuda nccl")
+    with when("+rocm"):
+        variant("rccl", default=False, description="Use rocm rccl")
 
     depends_on("cmake@3.22:", type="build")
     depends_on("mpi@3:")
@@ -51,8 +56,12 @@ class Cosma(CMakePackage):
     depends_on("scalapack", when="+scalapack")
     depends_on("cuda", when="+cuda")
     depends_on("rocblas", when="+rocm")
+    depends_on("nccl", when="+nccl")
+    depends_on("rccl", when="+rccl")
 
-    with when("@master"):
+    with when("@2.6.3"):
+        depends_on("tiled-mm@2.2")
+    with when("@2.6.1:"):
         depends_on("tiled-mm+rocm", when="+rocm")
         depends_on("tiled-mm+cuda", when="+cuda")
         depends_on("costa")
@@ -77,14 +86,16 @@ class Cosma(CMakePackage):
             env.set("CUDA_PATH", self.spec["cuda"].prefix)
 
     def cosma_blas_cmake_arg(self):
+        # order matters, CUDA and ROCM need to be first,
+        # since costa might introduce ^intel-mkl (scalapack provider)
         query_to_cmake_arg = [
+            ("+cuda", "CUDA"),
+            ("+rocm", "ROCM"),
             ("^intel-mkl", "MKL"),
             ("^intel-oneapi-mkl", "MKL"),
             ("^cray-libsci", "CRAY_LIBSCI"),
             ("^netlib-lapack", "CUSTOM"),
-            ("^openblas", "OPENBLAS"),
-            ("+cuda", "CUDA"),
-            ("+rocm", "ROCM"),
+            ("^openblas", "OPENBLAS")
         ]
 
         if self.version >= Version("2.4.0"):
@@ -115,6 +126,7 @@ class Cosma(CMakePackage):
             self.define_from_variant("COSMA_WITH_TESTS", "tests"),
             self.define_from_variant("COSMA_WITH_APPS", "apps"),
             self.define_from_variant("COSMA_WITH_NCCL", "nccl"),
+            self.define_from_variant("COSMA_WITH_RCCL", "rccl"),
             self.define_from_variant("COSMA_WITH_GPU_AWARE_MPI", "gpu_direct"),
             self.define_from_variant("COSMA_WITH_PROFILING", "profiling"),
             self.define("COSMA_WITH_BENCHMARKS", False),
